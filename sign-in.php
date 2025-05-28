@@ -5,16 +5,16 @@ require 'config.php';
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    if (!$username) $errors[] = "Username or email required.";
-    if (!$password) $errors[] = "Password required.";
+    if (!$email) $errors[] = "Email is required.";
+    if (!$password) $errors[] = "Password is required.";
 
     if (empty($errors)) {
-        // Prepare statement to select user by username or email
-        $stmt = mysqli_prepare($conn, "SELECT username, password_hash FROM users WHERE username = ? OR email = ?");
-        mysqli_stmt_bind_param($stmt, "ss", $username, $username);
+        // Prepare statement to select user by email only
+        $stmt = mysqli_prepare($conn, "SELECT username, password_hash FROM users WHERE email = ?");
+        mysqli_stmt_bind_param($stmt, "s", $email);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_store_result($stmt);
 
@@ -27,10 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: index.php');
                 exit;
             } else {
-                $errors[] = "Invalid username/email or password.";
+                $errors[] = "Invalid email or password.";
             }
         } else {
-            $errors[] = "Invalid username/email or password.";
+            $errors[] = "Invalid email or password.";
         }
         mysqli_stmt_close($stmt);
     }
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php endif; ?>
 
 <form method="POST" action="sign-in.php" novalidate>
-    <label>Username or Email: <input type="text" name="username" required value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" /></label><br/>
+    <label>Email: <input type="email" name="email" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" /></label><br/>
     <label>Password: <input type="password" name="password" required /></label><br/>
     <button type="submit" name="submit">Sign In</button>
 </form>
