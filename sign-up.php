@@ -40,7 +40,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validation
     if (!$first_name) $errors[] = "First name is required.";
     if (!$last_name) $errors[] = "Last name is required.";
-    if (!$dob) $errors[] = "Date of birth is required.";
+    if (!$dob) {
+    $errors[] = "Date of birth is required.";
+} elseif (!isAtLeast18($dob)) {
+    $errors[] = "You must be at least 18 years old to register.";
+}
+
     if (!$address) $errors[] = "Address is required.";
     if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Valid email is required.";
     if (!$phone) $errors[] = "Phone number is required.";
