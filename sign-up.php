@@ -158,71 +158,401 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Sign Up - The Velvet Reel</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-.error-messages { color: red; }
-label { display: block; margin-top: 10px; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.chaitu-body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    min-height: 100vh;
+    color: #ffffff;
+    padding: 20px;
+}
+
+.chaitu-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.chaitu-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.chaitu-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.chaitu-subtitle {
+    font-size: 1.1rem;
+    color: #cccccc;
+    font-weight: 300;
+    margin-bottom: 10px;
+}
+
+.chaitu-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-top: 20px;
+}
+
+.chaitu-error-messages {
+    background: rgba(220, 53, 69, 0.15);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+}
+
+.chaitu-error-messages ul {
+    list-style: none;
+}
+
+.chaitu-error-messages li {
+    color: #ff6b7a;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    padding-left: 20px;
+    position: relative;
+}
+
+.chaitu-error-messages li:before {
+    content: "⚠";
+    position: absolute;
+    left: 0;
+    color: #dc3545;
+}
+
+.chaitu-form {
+    display: grid;
+    gap: 25px;
+}
+
+.chaitu-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.chaitu-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.chaitu-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #e0e0e0;
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+}
+
+.chaitu-input {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 15px 18px;
+    font-size: 1rem;
+    color: #ffffff;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.chaitu-input::placeholder {
+    color: #999999;
+}
+
+.chaitu-input:focus {
+    outline: none;
+    border-color: #dc3545;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+    transform: translateY(-1px);
+}
+
+.chaitu-input:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.chaitu-checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.chaitu-checkbox {
+    width: 20px;
+    height: 20px;
+    accent-color: #dc3545;
+    cursor: pointer;
+    margin-top: 2px;
+}
+
+.chaitu-checkbox-label {
+    color: #cccccc;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    cursor: pointer;
+    flex: 1;
+}
+
+.chaitu-checkbox-label a {
+    color: #dc3545;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.chaitu-checkbox-label a:hover {
+    color: #ff4757;
+    text-decoration: underline;
+}
+
+.chaitu-submit-btn {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 18px 40px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+}
+
+.chaitu-submit-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.chaitu-submit-btn:hover:before {
+    left: 100%;
+}
+
+.chaitu-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.chaitu-submit-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .chaitu-container {
+        margin: 10px;
+        padding: 30px 25px;
+    }
+    
+    .chaitu-brand {
+        font-size: 2rem;
+    }
+    
+    .chaitu-form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .chaitu-input {
+        padding: 12px 15px;
+    }
+    
+    .chaitu-submit-btn {
+        padding: 15px 30px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .chaitu-container {
+        margin: 5px;
+        padding: 25px 20px;
+    }
+    
+    .chaitu-brand {
+        font-size: 1.8rem;
+    }
+    
+    .chaitu-title {
+        font-size: 1.5rem;
+    }
+}
+
+/* Animation for form elements */
+.chaitu-form-group {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.chaitu-form-group:nth-child(1) { animation-delay: 0.1s; }
+.chaitu-form-group:nth-child(2) { animation-delay: 0.2s; }
+.chaitu-form-group:nth-child(3) { animation-delay: 0.3s; }
+.chaitu-form-group:nth-child(4) { animation-delay: 0.4s; }
+.chaitu-form-group:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading state for button */
+.chaitu-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Custom date picker styling */
+.chaitu-input[type="date"] {
+    color-scheme: dark;
+}
+
+.chaitu-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
 </style>
 </head>
-<body>
+<body class="chaitu-body">
 
-<h2>Create an Account</h2>
-
-<?php if ($errors): ?>
-    <div class="error-messages">
-        <ul>
-            <?php foreach ($errors as $err): ?>
-                <li><?= htmlspecialchars($err) ?></li>
-            <?php endforeach; ?>
-        </ul>
+<div class="chaitu-container">
+    <div class="chaitu-header">
+        <h1 class="chaitu-brand">The Velvet Reel</h1>
+        <p class="chaitu-subtitle">Connecting visionary projects with extraordinary talents</p>
+        <h2 class="chaitu-title">Create Your Account</h2>
     </div>
-<?php endif; ?>
 
-<form method="POST" action="sign-up.php" novalidate>
-    <label>First Name:
-        <input type="text" name="first_name" value="<?= htmlspecialchars($_POST['first_name'] ?? '') ?>" required />
-    </label>
+    <?php if ($errors): ?>
+        <div class="chaitu-error-messages">
+            <ul>
+                <?php foreach ($errors as $err): ?>
+                    <li><?= htmlspecialchars($err) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
 
-    <label>Last Name:
-        <input type="text" name="last_name" value="<?= htmlspecialchars($_POST['last_name'] ?? '') ?>" required />
-    </label>
+    <form method="POST" action="sign-up.php" novalidate class="chaitu-form">
+        <div class="chaitu-form-row">
+            <div class="chaitu-form-group">
+                <label class="chaitu-label">First Name</label>
+                <input type="text" name="first_name" class="chaitu-input" 
+                       value="<?= htmlspecialchars($_POST['first_name'] ?? '') ?>" 
+                       placeholder="Enter your first name" required />
+            </div>
 
-    <label>Date of Birth:
-        <input type="date" name="dob" value="<?= htmlspecialchars($_POST['dob'] ?? '') ?>" required />
-    </label>
+            <div class="chaitu-form-group">
+                <label class="chaitu-label">Last Name</label>
+                <input type="text" name="last_name" class="chaitu-input" 
+                       value="<?= htmlspecialchars($_POST['last_name'] ?? '') ?>" 
+                       placeholder="Enter your last name" required />
+            </div>
+        </div>
 
-    <label>Address:
-        <input type="text" name="address" value="<?= htmlspecialchars($_POST['address'] ?? '') ?>" required />
-    </label>
+        <div class="chaitu-form-group">
+            <label class="chaitu-label">Date of Birth</label>
+            <input type="date" name="dob" class="chaitu-input" 
+                   value="<?= htmlspecialchars($_POST['dob'] ?? '') ?>" required />
+        </div>
 
-    <label>Email:
-        <input type="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required />
-    </label>
+        <div class="chaitu-form-group">
+            <label class="chaitu-label">Address</label>
+            <input type="text" name="address" class="chaitu-input" 
+                   value="<?= htmlspecialchars($_POST['address'] ?? '') ?>" 
+                   placeholder="Enter your full address" required />
+        </div>
 
-    <label>Phone Number:
-        <input type="tel" name="phone" value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>" required />
-    </label>
+        <div class="chaitu-form-row">
+            <div class="chaitu-form-group">
+                <label class="chaitu-label">Email Address</label>
+                <input type="email" name="email" class="chaitu-input" 
+                       value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" 
+                       placeholder="your.email@example.com" required />
+            </div>
 
-    <label>Username:
-        <input type="text" name="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required />
-    </label>
+            <div class="chaitu-form-group">
+                <label class="chaitu-label">Phone Number</label>
+                <input type="tel" name="phone" class="chaitu-input" 
+                       value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>" 
+                       placeholder="+1 (555) 123-4567" required />
+            </div>
+        </div>
 
-    <label>Password:
-        <input type="password" name="password" required />
-    </label>
+        <div class="chaitu-form-group">
+            <label class="chaitu-label">Username</label>
+            <input type="text" name="username" class="chaitu-input" 
+                   value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" 
+                   placeholder="Choose a unique username" required />
+        </div>
 
-    <label>Confirm Password:
-        <input type="password" name="password_confirm" required />
-    </label>
+        <div class="chaitu-form-row">
+            <div class="chaitu-form-group">
+                <label class="chaitu-label">Password</label>
+                <input type="password" name="password" class="chaitu-input" 
+                       placeholder="Create a strong password" required />
+            </div>
 
-    <label>
-        <input type="checkbox" name="terms" <?= isset($_POST['terms']) ? 'checked' : '' ?> />
-        I accept the <a href="terms.html" target="_blank">terms and conditions</a>.
-    </label>
+            <div class="chaitu-form-group">
+                <label class="chaitu-label">Confirm Password</label>
+                <input type="password" name="password_confirm" class="chaitu-input" 
+                       placeholder="Confirm your password" required />
+            </div>
+        </div>
 
-    <br/>
-    <button type="submit">Sign Up</button>
-</form>
+        <div class="chaitu-checkbox-group">
+            <input type="checkbox" name="terms" id="terms" class="chaitu-checkbox" 
+                   <?= isset($_POST['terms']) ? 'checked' : '' ?> />
+            <label for="terms" class="chaitu-checkbox-label">
+                I accept the <a href="terms.html" target="_blank">Terms and Conditions</a> 
+                and acknowledge that I have read the Privacy Policy.
+            </label>
+        </div>
+
+        <button type="submit" class="chaitu-submit-btn">Create Account</button>
+    </form>
+</div>
 
 </body>
 </html>
