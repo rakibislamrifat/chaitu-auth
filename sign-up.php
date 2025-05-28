@@ -40,12 +40,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validation
     if (!$first_name) $errors[] = "First name is required.";
     if (!$last_name) $errors[] = "Last name is required.";
-    if (!$dob) {
-    $errors[] = "Date of birth is required.";
-} elseif (!isAtLeast18($dob)) {
-    $errors[] = "You must be at least 18 years old to register.";
-}
+    // Age validation
+if ($dob) {
+    $dobDate = new DateTime($dob);
+    $today = new DateTime();
+    $age = $today->diff($dobDate)->y;
 
+    if ($age < 18) {
+        $errors[] = "You must be at least 18 years old to sign up.";
+    }
+};
     if (!$address) $errors[] = "Address is required.";
     if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Valid email is required.";
     if (!$phone) $errors[] = "Phone number is required.";
@@ -56,8 +60,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Check if username or email exists
     if (empty($errors)) {
-        $stmt = mysqli_prepare($conn, "SELECT COUNT(*) FROM users WHERE username = ? OR email = ?");
-        mysqli_stmt_bind_param($stmt, "ss", $username, $email);
+        $stmt = mysqli_prepare($conn, "SELECT COUNT(*) FROM users WHERE email = ?");
+mysqli_stmt_bind_param($stmt, "s", $email);
+
         mysqli_stmt_execute($stmt);
         mysqli_stmt_bind_result($stmt, $count);
         mysqli_stmt_fetch($stmt);
@@ -123,5 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </label><br/>
     <button type="submit" name="submit">Sign Up</button>
 </form>
+
+
 </body>
 </html>
