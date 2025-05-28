@@ -1,11 +1,48 @@
 <?php
 session_start();
 
+require 'config.php';
+
+// --- Create users table if not exists ---
+$result = mysqli_query($conn, "SHOW TABLES LIKE 'users'");
+if (mysqli_num_rows($result) == 0) {
+    $create_table_sql = "
+        CREATE TABLE users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            first_name VARCHAR(100) NOT NULL,
+            last_name VARCHAR(100) NOT NULL,
+            dob DATE NOT NULL,
+            address VARCHAR(255) NOT NULL,
+            email VARCHAR(150) NOT NULL UNIQUE,
+            phone VARCHAR(30) NOT NULL,
+            username VARCHAR(100) NOT NULL UNIQUE,
+            password_hash VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ";
+    if (!mysqli_query($conn, $create_table_sql)) {
+        die("Error creating users table: " . mysqli_error($conn));
+    }
+}
+
+// --- Add reset_token and reset_token_expiry columns if not exist ---
+$result = mysqli_query($conn, "SHOW COLUMNS FROM users LIKE 'reset_token'");
+if (mysqli_num_rows($result) == 0) {
+    $alter_sql = "
+        ALTER TABLE users
+        ADD COLUMN reset_token VARCHAR(255) NULL,
+        ADD COLUMN reset_token_expiry DATETIME NULL
+    ";
+    if (!mysqli_query($conn, $alter_sql)) {
+        die("Error altering users table: " . mysqli_error($conn));
+    }
+}
+
+// Use PHPMailer for sending email
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
-require 'config.php';
 
 $errors = [];
 
@@ -18,7 +55,7 @@ function sendVerificationCode($email, $code) {
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'rakibislamrifat9@gmail.com';       // Your Gmail
+        $mail->Username   = 'rakibislamrifat9@gmail.com';  // Your Gmail
         $mail->Password   = 'xnxnouvxhafizenv';           // Gmail App Password
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
@@ -44,8 +81,8 @@ function sendVerificationCode($email, $code) {
     }
 }
 
+// --- Handle form submission ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Sanitize and assign inputs
     $first_name = trim($_POST['first_name'] ?? '');
     $last_name = trim($_POST['last_name'] ?? '');
     $dob = $_POST['dob'] ?? '';
@@ -90,6 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // If no errors, generate OTP and save session data, send email
     if (empty($errors)) {
         $otp = random_int(100000, 999999);
         $_SESSION['pending_signup'] = [
@@ -104,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
         $_SESSION['email_to_verify'] = $email;
         $_SESSION['email_otp'] = (string)$otp;
-        $_SESSION['otp_expiry'] = time() + 300; // 5 minutes expiry
+        $_SESSION['otp_expiry'] = time() + 300; // expires in 5 minutes
 
         if (sendVerificationCode($email, $otp)) {
             header('Location: verify-email.php');

@@ -2,12 +2,17 @@
 session_start();
 require 'config.php';
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php';
+
 $errors = [];
 $success = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
-    
+
     if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Please enter a valid email address.";
     } else {
@@ -20,30 +25,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_close($stmt);
 
         if ($user_id) {
-            // Generate token and expiry (e.g., 1 hour)
-            $token = bin2hex(random_bytes(32)); // 64 chars
-            $expiry = date("Y-m-d H:i:s", strtotime("+1 hour"));
+            // Generate 6-digit OTP and expiry (e.g., 10 minutes)
+            $otp = random_int(100000, 999999);
+            $expiry = date("Y-m-d H:i:s", strtotime("+10 minutes"));
 
-            // Save token and expiry in DB
+            // Save OTP and expiry in DB
             $stmt = mysqli_prepare($conn, "UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?");
-            mysqli_stmt_bind_param($stmt, "ssi", $token, $expiry, $user_id);
+            mysqli_stmt_bind_param($stmt, "ssi", $otp, $expiry, $user_id);
             mysqli_stmt_execute($stmt);
             mysqli_stmt_close($stmt);
 
-            // Send reset email (use PHPMailer or mail())
-            $resetLink = "https://yourdomain.com/reset-password.php?token=$token";
-
-            $subject = "Password Reset Request";
-            $message = "Hello,\n\nWe received a request to reset your password. "
-                     . "Please click the link below to reset your password:\n\n"
-                     . "$resetLink\n\n"
-                     . "This link will expire in 1 hour.\n\n"
+            // Send OTP email
+            $subject = "Your Password Reset OTP";
+            $message = "Hello,\n\nYour password reset OTP code is: $otp\n\n"
+                     . "This code will expire in 10 minutes.\n\n"
                      . "If you didn't request this, please ignore this email.";
 
-            // Use mail() or PHPMailer here
-            mail($email, $subject, $message, "From: no-reply@yourdomain.com");
+            $mail = new PHPMailer(true);
+            try {
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username   = 'rakibislamrifat9@gmail.com';       // Your Gmail
+                $mail->Password   = 'xnxnouvxhafizenv';        // Your Gmail app password
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
 
-            $success = "Password reset instructions have been sent to your email.";
+                $mail->setFrom('rakibislamrifat9@gmail.com', 'The Velvet Reel');
+                $mail->addAddress($email);
+
+                $mail->Subject = $subject;
+                $mail->Body = $message;
+
+                $mail->send();
+                $_SESSION['reset_email'] = $email; // store for verification step
+                header('Location: verify-otp.php');
+                exit;
+            } catch (Exception $e) {
+                $errors[] = "Could not send OTP email. Mailer Error: " . $mail->ErrorInfo;
+            }
         } else {
             $errors[] = "No account found with that email address.";
         }
@@ -53,27 +73,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html>
-<head><title>Forgot Password</title></head>
+<head>
+    <title>Forgot Password</title>
+</head>
 <body>
 <h2>Forgot Password</h2>
 
 <?php if ($errors): ?>
-<div style="color:red;">
-    <ul>
-        <?php foreach ($errors as $e) echo "<li>" . htmlspecialchars($e) . "</li>"; ?>
-    </ul>
-</div>
-<?php endif; ?>
-
-<?php if ($success): ?>
-<div style="color:green;">
-    <?= htmlspecialchars($success) ?>
-</div>
+    <div style="color:red;">
+        <ul>
+            <?php foreach ($errors as $e) echo "<li>" . htmlspecialchars($e) . "</li>"; ?>
+        </ul>
+    </div>
 <?php endif; ?>
 
 <form method="POST" action="forgot-password.php" novalidate>
     <label>Email: <input type="email" name="email" required /></label><br/>
-    <button type="submit">Send Reset Link</button>
+    <button type="submit">Send OTP</button>
 </form>
 
 </body>
