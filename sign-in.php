@@ -1,4 +1,7 @@
 <?php
+/** 
+ * Template Name: Sign In
+ */
 session_start();
 require 'config.php';
 
